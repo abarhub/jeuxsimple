@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+	"build:docs": "vite build --outDir ../docs/spider --emptyOutDir --base ./",
     "preview": "vite preview"
   },
   "devDependencies": {
