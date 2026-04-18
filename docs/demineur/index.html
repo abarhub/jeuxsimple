@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Démineur</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #c0c0c0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 12px 40px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #000;
+      margin-bottom: 14px;
+    }
+
+    /* ── Difficulty buttons ── */
+    #presets {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #presets button {
+      background: #c0c0c0;
+      color: #000;
+      font-size: 0.82rem;
+      padding: 5px 12px;
+      cursor: pointer;
+      /* Raised 3-D */
+      border-top:    2px solid #ffffff;
+      border-left:   2px solid #ffffff;
+      border-bottom: 2px solid #808080;
+      border-right:  2px solid #808080;
+    }
+
+    #presets button.active,
+    #presets button:active {
+      border-top:    2px solid #808080;
+      border-left:   2px solid #808080;
+      border-bottom: 2px solid #ffffff;
+      border-right:  2px solid #ffffff;
+      padding: 6px 11px 4px 13px;
+    }
+
+    /* ── Custom form ── */
+    #custom-panel {
+      display: none;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    #custom-panel label { color: #000; }
+
+    #custom-panel input {
+      width: 52px;
+      background: #fff;
+      color: #000;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 2px 4px;
+      border-top:    2px solid #808080;
+      border-left:   2px solid #808080;
+      border-bottom: 2px solid #fff;
+      border-right:  2px solid #fff;
+    }
+
+    #custom-panel button[type="submit"] {
+      background: #c0c0c0;
+      color: #000;
+      font-size: 0.82rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border-top:    2px solid #ffffff;
+      border-left:   2px solid #ffffff;
+      border-bottom: 2px solid #808080;
+      border-right:  2px solid #808080;
+    }
+
+    /* ── Main board ── */
+    #board {
+      /* Outer raised frame */
+      border-top:    3px solid #ffffff;
+      border-left:   3px solid #ffffff;
+      border-bottom: 3px solid #808080;
+      border-right:  3px solid #808080;
+      background: #c0c0c0;
+      padding: 8px;
+      display: inline-block;
+    }
+
+    /* ── Header row ── */
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      margin-bottom: 8px;
+      border-top:    2px solid #808080;
+      border-left:   2px solid #808080;
+      border-bottom: 2px solid #ffffff;
+      border-right:  2px solid #ffffff;
+    }
+
+    /* LCD 7-segment style */
+    .lcd {
+      background: #200;
+      color: #f00;
+      font-family: 'Courier New', 'Lucida Console', monospace;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      padding: 2px 8px;
+      min-width: 58px;
+      text-align: right;
+      border-top:    2px solid #808080;
+      border-left:   2px solid #808080;
+      border-bottom: 2px solid #fff;
+      border-right:  2px solid #fff;
+    }
+
+    /* Smiley restart button */
+    #smiley {
+      font-size: 20px;
+      background: #c0c0c0;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-top:    3px solid #ffffff;
+      border-left:   3px solid #ffffff;
+      border-bottom: 3px solid #808080;
+      border-right:  3px solid #808080;
+    }
+
+    #smiley:active {
+      border-top:    3px solid #808080;
+      border-left:   3px solid #808080;
+      border-bottom: 3px solid #ffffff;
+      border-right:  3px solid #ffffff;
+      padding: 2px 0 0 2px;
+    }
+
+    /* ── Grid frame ── */
+    #grid-wrap {
+      border-top:    3px solid #808080;
+      border-left:   3px solid #808080;
+      border-bottom: 3px solid #ffffff;
+      border-right:  3px solid #ffffff;
+      overflow: auto;
+    }
+
+    /* ── Grid ── */
+    #grid {
+      display: grid;
+      gap: 0;
+      line-height: 1;
+    }
+
+    /* ── Cell base ── */
+    .cell {
+      width: 26px;
+      height: 26px;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    /* Unrevealed / flagged — raised button */
+    .cell-up {
+      background: #c0c0c0;
+      border-top:    2px solid #ffffff;
+      border-left:   2px solid #ffffff;
+      border-bottom: 2px solid #808080;
+      border-right:  2px solid #808080;
+    }
+
+    .cell-up:hover { background: #d0d0d0; }
+
+    .cell-up:active {
+      border: 1px solid #808080;
+      background: #b8b8b8;
+      padding: 1px 0 0 1px;
+    }
+
+    /* Revealed — flat */
+    .cell-down {
+      background: #bdbdbd;
+      border: 1px solid #808080;
+    }
+
+    .cell-mine { font-size: 15px; }
+
+    .cell-wrong { font-size: 11px; letter-spacing: -1px; }
+  </style>
+  <script type="module" crossorigin src="./assets/index-B5ify91T.js"></script>
+</head>
+<body>
+
+  <h1>💣 Démineur</h1>
+
+  <div id="presets">
+    <button data-preset="beginner" class="active">Débutant &nbsp;9×9 / 10</button>
+    <button data-preset="intermediate">Intermédiaire &nbsp;16×16 / 40</button>
+    <button data-preset="expert">Expert &nbsp;30×16 / 99</button>
+    <button data-preset="custom">Personnalisé…</button>
+  </div>
+
+  <form id="custom-form">
+    <div id="custom-panel">
+      <label>Lignes <input  type="number" id="custom-rows"  value="9"  min="5" max="40"></label>
+      <label>Colonnes <input type="number" id="custom-cols"  value="9"  min="5" max="60"></label>
+      <label>Mines <input   type="number" id="custom-mines" value="10" min="1" max="999"></label>
+      <button type="submit">Jouer</button>
+    </div>
+  </form>
+
+  <div id="board">
+    <div id="header">
+      <div class="lcd" id="mine-count">010</div>
+      <button id="smiley">🙂</button>
+      <div class="lcd" id="timer">000</div>
+    </div>
+    <div id="grid-wrap">
+      <div id="grid"></div>
+    </div>
+  </div>
+
+</body>
+</html>
