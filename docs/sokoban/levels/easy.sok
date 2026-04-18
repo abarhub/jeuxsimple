@@ -1,0 +1,37 @@
+; Niveaux Faciles
+; Série de niveaux simples pour débuter
+
+; 1 - Tutoriel
+#####
+#@$.#
+#####
+
+; 2 - Deux étapes
+######
+#  . #
+#    #
+# $  #
+# @  #
+######
+
+; 3 - Contournement
+######
+#@   #
+# $  #
+#  . #
+######
+
+; 4 - Deux caisses
+######
+#.   #
+#.$  #
+# $  #
+# @  #
+######
+
+; 5 - Travail d'équipe
+#######
+#. .  #
+# $$  #
+#  @  #
+#######

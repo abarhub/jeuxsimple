@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sokoban</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1008;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: monospace;
+      color: #f0e6d0;
+      gap: 14px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      color: #c17f24;
+      letter-spacing: 0.25em;
+    }
+
+    /* ── Sélecteur de série ── */
+    #setSelector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: #a0906a;
+    }
+    #levelSetSelect {
+      background: #2c1e0e;
+      color: #f0e6d0;
+      border: 1px solid #4a3728;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+    }
+    #levelSetSelect:focus {
+      border-color: #c17f24;
+    }
+    #levelSetSelect option {
+      background: #2c1e0e;
+    }
+
+    /* ── Infos niveau ── */
+    #levelTitle {
+      font-size: 1.05rem;
+      color: #a0906a;
+      min-height: 1.3em;
+    }
+    #moves {
+      font-size: 1rem;
+      color: #f0e6d0;
+    }
+
+    canvas {
+      display: block;
+      border: 2px solid #4a3728;
+    }
+
+    /* ── État chargement / message ── */
+    #message {
+      font-size: 1.15rem;
+      color: #3cb371;
+      min-height: 1.5em;
+    }
+    #loading {
+      font-size: 1rem;
+      color: #706050;
+      display: none;
+    }
+
+    #controls {
+      font-size: 0.78rem;
+      color: #706050;
+      text-align: center;
+      line-height: 2;
+    }
+    #controls span {
+      color: #a0906a;
+    }
+  </style>
+  <script type="module" crossorigin src="./assets/index-BFlv_1Ty.js"></script>
+</head>
+<body>
+  <h1>SOKOBAN</h1>
+
+  <div id="setSelector">
+    <label for="levelSetSelect">Série :</label>
+    <select id="levelSetSelect">
+      <option value="easy">Facile</option>
+      <option value="original">Original (Thinking Rabbit)</option>
+      <option value="microban">Microban (David Skinner)</option>
+    </select>
+  </div>
+
+  <div id="loading">Chargement…</div>
+  <div id="levelTitle"></div>
+  <div id="moves"></div>
+  <canvas id="gameCanvas"></canvas>
+  <div id="message"></div>
+
+  <div id="controls">
+    <span>↑↓←→</span> / <span>ZQSD</span> : déplacer &nbsp;|&nbsp;
+    <span>R</span> : recommencer &nbsp;|&nbsp;
+    <span>U</span> : annuler &nbsp;|&nbsp;
+    <span>N</span> : niveau suivant
+  </div>
+</body>
+</html>
