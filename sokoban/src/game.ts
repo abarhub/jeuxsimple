@@ -1,4 +1,4 @@
-import type { LevelData } from './levels';
+import type { LevelData } from './levelParser';
 
 export enum Cell {
   WALL = 0,
@@ -23,7 +23,7 @@ export interface GameState {
 export function parseLevel(level: LevelData): GameState {
   const rows = level.map;
   const height = rows.length;
-  const width = Math.max(...rows.map(r => r.length));
+  const width = Math.max(...rows.map((r: string) => r.length));
 
   const grid: Cell[][] = [];
   let playerX = 0;
