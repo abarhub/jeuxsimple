@@ -1,6 +1,7 @@
 import { LEVEL_SETS, loadLevelSet, type LevelData } from './levelParser';
-import { parseLevel, move, isSolved, type GameState } from './game';
+import { parseLevel, move, isSolved, type GameState, Cell } from './game';
 import { render, getCanvasSize } from './renderer';
+import { saveSession, loadSession, type SavedSession } from './storage';
 
 // ── DOM ──────────────────────────────────────────────────────────────────────
 const canvas       = document.getElementById('gameCanvas')     as HTMLCanvasElement;
@@ -12,10 +13,11 @@ const elLoading    = document.getElementById('loading')!;
 const elSelect     = document.getElementById('levelSetSelect') as HTMLSelectElement;
 
 // ── État ──────────────────────────────────────────────────────────────────────
-let levels: LevelData[]  = [];
-let currentIndex         = 0;
+let currentSetId = 'easy';
+let levels: LevelData[]         = [];
+let currentIndex                = 0;
 let gameState: GameState | null = null;
-let history: GameState[] = [];
+let history: GameState[]        = [];
 
 // ── Fonctions utilitaires ────────────────────────────────────────────────────
 function resizeCanvas(): void {
@@ -40,6 +42,10 @@ function updateUI(): void {
   }
 }
 
+function persist(): void {
+  if (gameState) saveSession(currentSetId, currentIndex, gameState);
+}
+
 function loadLevel(index: number): void {
   currentIndex = index;
   gameState    = parseLevel(levels[index]);
@@ -47,26 +53,41 @@ function loadLevel(index: number): void {
   resizeCanvas();
   updateUI();
   render(ctx, gameState);
+  persist();
+}
+
+/** Reconstruit un GameState depuis les données sauvegardées */
+function restoreState(saved: SavedSession): GameState {
+  return {
+    grid:           saved.grid as unknown as Cell[][],
+    playerX:        saved.playerX,
+    playerY:        saved.playerY,
+    moves:          saved.moves,
+    goalsRemaining: saved.goalsRemaining,
+    width:          saved.width,
+    height:         saved.height,
+  };
 }
 
 // ── Chargement d'une série ────────────────────────────────────────────────────
-async function selectSet(id: string): Promise<void> {
+async function selectSet(id: string, restore: SavedSession | null = null): Promise<void> {
   const set = LEVEL_SETS.find(s => s.id === id);
   if (!set) return;
 
-  // Afficher l'indicateur de chargement
-  elLoading.style.display    = 'block';
-  elLevelTitle.textContent   = '';
-  elMoves.textContent        = '';
-  elMessage.textContent      = '';
-  canvas.width               = 0;
-  canvas.height              = 0;
+  currentSetId = id;
+
+  elLoading.style.display  = 'block';
+  elLevelTitle.textContent = '';
+  elMoves.textContent      = '';
+  elMessage.textContent    = '';
+  canvas.width             = 0;
+  canvas.height            = 0;
 
   try {
     levels = await loadLevelSet(set);
-  } catch (e) {
-    elLoading.style.display  = 'none';
-    elMessage.textContent    = `Erreur : impossible de charger « ${set.name} ».`;
+  } catch {
+    elLoading.style.display = 'none';
+    elMessage.textContent   = `Erreur : impossible de charger « ${set.name} ».`;
     return;
   }
 
@@ -77,7 +98,17 @@ async function selectSet(id: string): Promise<void> {
     return;
   }
 
-  loadLevel(0);
+  // Restaurer la session sauvegardée si elle correspond à cette série
+  if (restore && restore.setId === id && restore.levelIndex < levels.length) {
+    currentIndex = restore.levelIndex;
+    gameState    = restoreState(restore);
+    history      = [];
+    resizeCanvas();
+    updateUI();
+    render(ctx, gameState);
+  } else {
+    loadLevel(0);
+  }
 }
 
 // ── Gestion du clavier ────────────────────────────────────────────────────────
@@ -106,6 +137,7 @@ function handleKey(e: KeyboardEvent): void {
         gameState = history.pop()!;
         updateUI();
         render(ctx, gameState);
+        persist();
       }
       return;
     case 'n': case 'N':
@@ -124,6 +156,7 @@ function handleKey(e: KeyboardEvent): void {
     gameState = next;
     updateUI();
     render(ctx, gameState);
+    persist();
   }
 }
 
@@ -134,5 +167,13 @@ elSelect.addEventListener('change', () => {
   selectSet(elSelect.value);
 });
 
-// Charger la série sélectionnée par défaut
-selectSet(elSelect.value);
+// Charger la session précédente si elle existe
+const saved = loadSession();
+const initialSetId = saved?.setId ?? 'easy';
+
+// Pré-sélectionner la bonne série dans le dropdown
+if (LEVEL_SETS.some(s => s.id === initialSetId)) {
+  elSelect.value = initialSetId;
+}
+
+selectSet(initialSetId, saved);
