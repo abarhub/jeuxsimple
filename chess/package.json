@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+	"build:docs": "vite build --outDir ../docs/chess --emptyOutDir --base ./",
     "preview": "vite preview"
   },
   "dependencies": {
