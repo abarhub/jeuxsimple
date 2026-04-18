@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jeu d'échecs</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      color: #f0d9b5;
+      letter-spacing: 2px;
+    }
+
+    #controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    label {
+      font-size: 0.95rem;
+      color: #c0b080;
+    }
+
+    select, button {
+      font-size: 0.95rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #2d2d4e;
+      color: #e0e0e0;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    select:focus, button:hover {
+      background: #3a3a60;
+      outline: none;
+    }
+
+    button {
+      background: #3b5e3b;
+      border-color: #5a8a5a;
+    }
+
+    button:hover {
+      background: #4a7a4a;
+    }
+
+    #board-wrap {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #board-container {
+      width: 480px;
+      height: 480px;
+    }
+
+    #sidebar {
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #status {
+      background: #2d2d4e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 80px;
+    }
+
+    #status .turn-label {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    #status .turn-white { color: #f5f5dc; }
+    #status .turn-black { color: #b0a090; }
+
+    #status .result {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #f0d060;
+      margin-top: 6px;
+    }
+
+    #moves-list {
+      background: #2d2d4e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.85rem;
+      font-family: monospace;
+      max-height: 320px;
+      overflow-y: auto;
+      line-height: 1.8;
+    }
+
+    #moves-list .move-pair {
+      display: flex;
+      gap: 4px;
+    }
+
+    #moves-list .move-num { color: #888; width: 28px; }
+    #moves-list .move-w  { color: #f0e0c0; width: 70px; }
+    #moves-list .move-b  { color: #a0b8d0; }
+
+    /* Promotion dialog */
+    #promotion-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    #promotion-overlay.active { display: flex; }
+
+    #promotion-box {
+      background: #2a2a48;
+      border: 2px solid #888;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #promotion-box h2 {
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+      color: #f0d9b5;
+    }
+
+    #promotion-pieces {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .promo-btn {
+      font-size: 2.8rem;
+      background: #3a3a60;
+      border: 2px solid #666;
+      border-radius: 8px;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      padding: 0;
+    }
+
+    .promo-btn:hover {
+      background: #5050a0;
+      border-color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1>♟ Échecs</h1>
+
+  <div id="controls">
+    <label for="modeSelect">Mode :</label>
+    <select id="modeSelect">
+      <option value="pvp">Joueur vs Joueur</option>
+      <option value="ai-white">Joueur (Blancs) vs IA</option>
+      <option value="ai-black">Joueur (Noirs) vs IA</option>
+    </select>
+
+    <button id="newGameBtn">Nouvelle partie</button>
+    <button id="flipBtn">Retourner</button>
+  </div>
+
+  <div id="board-wrap">
+    <div id="board-container"></div>
+
+    <div id="sidebar">
+      <div id="status">
+        <div class="turn-label turn-white">Blancs à jouer</div>
+      </div>
+      <div id="moves-list"></div>
+    </div>
+  </div>
+
+  <!-- Promotion dialog -->
+  <div id="promotion-overlay">
+    <div id="promotion-box">
+      <h2>Promotion du pion</h2>
+      <div id="promotion-pieces"></div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
