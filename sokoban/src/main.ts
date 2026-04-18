@@ -57,9 +57,9 @@ function handleKey(e: KeyboardEvent): void {
   let dy = 0;
 
   switch (e.key) {
-    case 'ArrowUp':    case 'w': case 'W': dy = -1; break;
+    case 'ArrowUp':    case 'z': case 'Z': dy = -1; break;
     case 'ArrowDown':  case 's': case 'S': dy =  1; break;
-    case 'ArrowLeft':  case 'a': case 'A': dx = -1; break;
+    case 'ArrowLeft':  case 'q': case 'Q': dx = -1; break;
     case 'ArrowRight': case 'd': case 'D': dx =  1; break;
     case 'r': case 'R': loadLevel(currentLevel); return;
     case 'u': case 'U':
