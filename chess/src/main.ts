@@ -133,7 +133,7 @@ function updateMovesList(): void {
 // ── After each move ───────────────────────────────────────────────────────────
 
 function afterMove(): void {
-  ground.set({ fen: chess.fen() });
+  ground.set({ fen: chess.fen(), turnColor: toColor(chess) });
   updateMovable();
   updateStatus();
   updateMovesList();
@@ -158,8 +158,13 @@ function doAiMove(): void {
   const mv = moves[Math.floor(Math.random() * moves.length)];
   chess.move(mv);
 
-  // Highlight the AI's move
-  ground.move(mv.from as Key, mv.to as Key);
+  // Mettre à jour le plateau visuellement sans passer par ground.move()
+  // (ground.move déclenche le callback after et crée une double application du coup)
+  ground.set({
+    fen: chess.fen(),
+    lastMove: [mv.from as Key, mv.to as Key],
+    turnColor: toColor(chess),
+  });
   afterMove();
 }
 
@@ -174,8 +179,8 @@ async function handleMove(orig: Key, dest: Key): Promise<void> {
       chess.move({ from: orig as string, to: dest as string });
     }
   } catch {
-    // Move was illegal (shouldn't happen since chessground limits to legal moves)
-    ground.set({ fen: chess.fen() });
+    // Coup illégal — remettre la position correcte
+    ground.set({ fen: chess.fen(), turnColor: toColor(chess) });
     updateMovable();
     return;
   }
