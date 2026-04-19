@@ -44,10 +44,10 @@ function shuffle<T>(arr: T[]): T[] {
 
 function makeDeck(mode: SuitMode): Card[] {
   // 104 cards = 8 sets of 13 ranks
-  // black : 4 × Spades  + 4 × Clubs
+  // black : 8 × Spades only
   // color : 2 × Spades  + 2 × Clubs + 2 × Hearts + 2 × Diamonds
   const suitSets: Suit[] = mode === 'black'
-    ? ['S','S','S','S','C','C','C','C']
+    ? ['S','S','S','S','S','S','S','S']
     : ['S','S','C','C','H','H','D','D'];
 
   const cards: Card[] = [];
