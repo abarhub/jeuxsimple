@@ -14,6 +14,9 @@ const TOP_Y  = PAD;
 // Tableau y
 const TAB_Y  = TOP_Y + CH + PAD + 8;
 
+// Natural board width (8 columns + gaps + 2× margin)
+const NATURAL_W = 8 * CW + 7 * HGAP + 2 * PAD;  // 644 px
+
 // Suit symbols & colors
 const SUIT_SYMBOL: Record<string, string> = { S: '♠', H: '♥', D: '♦', C: '♣' };
 const RANK_LABEL  = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -24,24 +27,29 @@ export type Zone =
   | { area: 'foundation'; idx: number }
   | { area: 'tableau'; col: number; cardIdx: number };
 
-// ── Geometry helpers ──────────────────────────────────────────────────────────
+// ── Geometry helpers (always use NATURAL_W) ───────────────────────────────────
 
-function colX(col: number, canvasW: number): number {
+function colX(col: number): number {
   const totalW = 8 * CW + 7 * HGAP;
-  const left   = (canvasW - totalW) / 2;
+  const left   = (NATURAL_W - totalW) / 2;
   return left + col * (CW + HGAP);
 }
 
-function freecellX(idx: number, canvasW: number): number {
+function freecellX(idx: number): number {
   const totalW = 8 * CW + 7 * HGAP;
-  const left   = (canvasW - totalW) / 2;
+  const left   = (NATURAL_W - totalW) / 2;
   return left + idx * (CW + HGAP);
 }
 
-function foundationX(idx: number, canvasW: number): number {
+function foundationX(idx: number): number {
   const totalW = 8 * CW + 7 * HGAP;
-  const left   = (canvasW - totalW) / 2;
+  const left   = (NATURAL_W - totalW) / 2;
   return left + (4 + idx) * (CW + HGAP);
+}
+
+/** Scale factor: 1 when canvas is wide enough, <1 on narrow screens. */
+function getScale(cssW: number): number {
+  return Math.min(1, cssW / NATURAL_W);
 }
 
 // ── Drawing primitives ────────────────────────────────────────────────────────
@@ -150,21 +158,21 @@ export interface HitZone {
   x: number; y: number; w: number; h: number;
 }
 
-function buildHitZones(state: GameState, canvasW: number): HitZone[] {
+function buildHitZones(state: GameState): HitZone[] {
   const zones: HitZone[] = [];
 
   // Freecells
   for (let i = 0; i < 4; i++) {
-    zones.push({ zone: { area: 'freecell', idx: i }, x: freecellX(i, canvasW), y: TOP_Y, w: CW, h: CH });
+    zones.push({ zone: { area: 'freecell', idx: i }, x: freecellX(i), y: TOP_Y, w: CW, h: CH });
   }
   // Foundations
   for (let i = 0; i < 4; i++) {
-    zones.push({ zone: { area: 'foundation', idx: i }, x: foundationX(i, canvasW), y: TOP_Y, w: CW, h: CH });
+    zones.push({ zone: { area: 'foundation', idx: i }, x: foundationX(i), y: TOP_Y, w: CW, h: CH });
   }
-  // Tableau (bottom card of each visible pile is the hit target for the whole pile)
+  // Tableau
   for (let col = 0; col < 8; col++) {
     const pile = state.tableau[col];
-    const x    = colX(col, canvasW);
+    const x    = colX(col);
     if (pile.length === 0) {
       zones.push({ zone: { area: 'tableau', col, cardIdx: 0 }, x, y: TAB_Y, w: CW, h: CH });
     } else {
@@ -178,10 +186,14 @@ function buildHitZones(state: GameState, canvasW: number): HitZone[] {
   return zones;
 }
 
-export function hitTest(state: GameState, canvasW: number, cx: number, cy: number): Zone | null {
-  const zones = buildHitZones(state, canvasW).reverse(); // top-most first
+export function hitTest(state: GameState, cssW: number, cx: number, cy: number): Zone | null {
+  const scale = getScale(cssW);
+  // Convert CSS click coordinates to natural board coordinates
+  const nx = cx / scale;
+  const ny = cy / scale;
+  const zones = buildHitZones(state).reverse(); // top-most first
   for (const hz of zones) {
-    if (cx >= hz.x && cx < hz.x + hz.w && cy >= hz.y && cy < hz.y + hz.h) {
+    if (nx >= hz.x && nx < hz.x + hz.w && ny >= hz.y && ny < hz.y + hz.h) {
       return hz.zone;
     }
   }
@@ -195,29 +207,34 @@ export interface RenderOptions {
   hint:     Zone | null;
 }
 
-export function computeCanvasHeight(state: GameState): number {
+function computeNaturalHeight(state: GameState): number {
   const maxLen = Math.max(...state.tableau.map(col => col.length), 1);
   return TAB_Y + (maxLen - 1) * SPREAD + CH + PAD;
 }
 
 export function render(canvas: HTMLCanvasElement, state: GameState, opts: RenderOptions): void {
-  const ctx  = canvas.getContext('2d')!;
-  const dpr  = window.devicePixelRatio || 1;
-  const cssW = canvas.clientWidth;
-  const cssH = canvas.clientHeight;
+  const ctx   = canvas.getContext('2d')!;
+  const dpr   = window.devicePixelRatio || 1;
+  const cssW  = canvas.clientWidth;
+  const scale = getScale(cssW);
+  const natH  = computeNaturalHeight(state);
 
-  if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
-    canvas.width  = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
-    ctx.scale(dpr, dpr);
+  // Size the pixel buffer to the scaled content (no fixed CSS height needed)
+  const pxW = Math.round(cssW * dpr);
+  const pxH = Math.round(natH * scale * dpr);
+  if (canvas.width !== pxW || canvas.height !== pxH) {
+    canvas.width  = pxW;
+    canvas.height = pxH;
   }
-  ctx.clearRect(0, 0, cssW, cssH);
+  // Apply DPR + content scale every frame (transform resets after buffer resize)
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+  ctx.clearRect(0, 0, NATURAL_W, natH);
 
   const SUIT_FOUND = ['♠', '♥', '♦', '♣'];
 
   // ── Freecells ──
   for (let i = 0; i < 4; i++) {
-    const x    = freecellX(i, cssW);
+    const x    = freecellX(i);
     const card = state.freecells[i];
     const sel  = opts.selected?.area === 'freecell' && opts.selected.idx === i;
     const hint = opts.hint?.area === 'freecell' && opts.hint.idx === i;
@@ -230,7 +247,7 @@ export function render(canvas: HTMLCanvasElement, state: GameState, opts: Render
 
   // ── Foundations ──
   for (let i = 0; i < 4; i++) {
-    const x    = foundationX(i, cssW);
+    const x    = foundationX(i);
     const top  = state.foundations[i];
     const hint = opts.hint?.area === 'foundation' && opts.hint.idx === i;
     drawEmptySlot(ctx, x, TOP_Y, SUIT_FOUND[i]);
@@ -243,7 +260,7 @@ export function render(canvas: HTMLCanvasElement, state: GameState, opts: Render
   // ── Tableau ──
   for (let col = 0; col < 8; col++) {
     const pile = state.tableau[col];
-    const x    = colX(col, cssW);
+    const x    = colX(col);
     drawEmptySlot(ctx, x, TAB_Y);
 
     pile.forEach((card, ci) => {
