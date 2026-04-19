@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mahjong Solitaire</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #1a2a1a;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(20, 80, 40, 0.4) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(10, 40, 60, 0.4) 0%, transparent 55%);
+      color: #e8e0d0;
+      font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 12px 40px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #f0c060, #e87040, #c03060);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    select, button {
+      font-size: 0.85rem;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #e8e0d0;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    select { padding-right: 28px; }
+
+    select:hover, button:hover:not(:disabled) {
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.28);
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    /* ── Stats bar ── */
+    #stats {
+      display: flex;
+      gap: 20px;
+      font-size: 0.82rem;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    #stats span { color: #e8e0d0; font-weight: 600; }
+
+    /* ── Canvas wrapper ── */
+    #canvas-wrap {
+      position: relative;
+      width: min(100%, 960px);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #board {
+      display: block;
+      width: 100%;
+      height: clamp(420px, 62vh, 660px);
+      cursor: pointer;
+    }
+
+    /* ── End-of-game overlay ── */
+    #overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.60);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border-radius: 16px;
+    }
+
+    #overlay-msg {
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    #overlay-btn {
+      font-size: 1rem;
+      padding: 10px 28px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f0c060, #e07030);
+      color: #1a0a00;
+      font-weight: 700;
+      border: none;
+    }
+
+    #overlay-btn:hover {
+      background: linear-gradient(135deg, #f8d070, #e88040);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🀄 Mahjong Solitaire</h1>
+
+  <div id="toolbar">
+    <select id="layout-sel" aria-label="Disposition"></select>
+    <button id="btn-new">🔀 Nouvelle partie</button>
+    <button id="btn-undo" disabled>↩ Annuler</button>
+    <button id="btn-hint">💡 Indice</button>
+  </div>
+
+  <div id="stats">
+    Tuiles restantes : <span id="remain">—</span>
+    &nbsp;|&nbsp;
+    Paires libres : <span id="pairs">—</span>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="board"></canvas>
+    <div id="overlay">
+      <p id="overlay-msg"></p>
+      <button id="overlay-btn">Nouvelle partie</button>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
