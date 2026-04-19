@@ -24,6 +24,12 @@ let history:   GameState[] = [];
 // ── Render ────────────────────────────────────────────────────────────────────
 function draw(): void {
   render(ctx, state, selection);
+  // Adapt CSS display size so the canvas scales proportionally on narrow screens
+  const naturalW = canvasWidth();
+  const containerW = (canvas.parentElement?.clientWidth ?? naturalW);
+  const scale = Math.min(1, containerW / naturalW);
+  canvas.style.width  = Math.round(naturalW * scale) + 'px';
+  canvas.style.height = Math.round(canvas.height * scale) + 'px';
   undoBtn.disabled = history.length === 0;
   messageEl.textContent = state.won
     ? '🎉 Félicitations, vous avez gagné !'
@@ -178,6 +184,10 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
     }
   }
 });
+
+// ── Responsive resize ─────────────────────────────────────────────────────────
+const ro = new ResizeObserver(() => draw());
+ro.observe(canvas.parentElement!);
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 canvas.width = canvasWidth();
