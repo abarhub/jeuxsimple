@@ -77,6 +77,19 @@
       height: 480px;
     }
 
+    /* ── Protection contre Dark Reader et les extensions dark-mode ──────────
+       color-scheme: light  → Dark Reader (mode dynamique) laisse ces éléments
+                               intacts car il respecte ce signal CSS.
+       forced-color-adjust: none → idem pour Windows High Contrast / autres.
+       Les pièces SVG de chessground restent ainsi noires et blanches. ──── */
+    #board-container,
+    #board-container cg-wrap,
+    #board-container cg-board,
+    #board-container cg-board piece {
+      color-scheme: light;
+      forced-color-adjust: none;
+    }
+
     #sidebar {
       width: 200px;
       display: flex;
