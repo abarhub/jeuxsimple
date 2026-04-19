@@ -1,1 +1,15 @@
-{"name":"mahjong","version":"1.0.0","private":true,"scripts":{"dev":"vite","build":"tsc && vite build"},"devDependencies":{"typescript":"^5.4.5","vite":"^5.2.11"}}
+{
+  "name": "mahjong",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:docs": "vite build --outDir ../docs/mahjong --emptyOutDir --base ./",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}
