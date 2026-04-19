@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreeCell</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #1a4a1a;
+      background-image:
+        radial-gradient(ellipse at 25% 25%, rgba(10,80,10,0.5) 0%, transparent 60%),
+        radial-gradient(ellipse at 75% 75%, rgba(0,40,20,0.5) 0%, transparent 60%);
+      color: #e8f0e8;
+      font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 10px 40px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    h1 {
+      font-size: clamp(1.3rem, 4vw, 1.9rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #90ee90, #32cd32, #006400);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    button {
+      font-size: 0.84rem;
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      color: #e8f0e8;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    button:hover:not(:disabled) {
+      background: rgba(255,255,255,0.20);
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    button:disabled { opacity: 0.32; cursor: default; }
+
+    /* ── Stats ── */
+    #stats {
+      font-size: 0.80rem;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 8px;
+    }
+
+    #stats span { color: #9ee89e; font-weight: 600; }
+
+    /* ── Canvas wrapper ── */
+    #canvas-wrap {
+      position: relative;
+      width: min(100%, 700px);
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    #board {
+      display: block;
+      width: 100%;
+      height: clamp(480px, 72vh, 680px);
+      cursor: pointer;
+    }
+
+    /* ── Win overlay ── */
+    #overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,60,0,0.75);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      border-radius: 14px;
+    }
+
+    #overlay p {
+      font-size: clamp(1.6rem, 6vw, 2.4rem);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+
+    #overlay button {
+      font-size: 1rem;
+      padding: 10px 30px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #32cd32, #006400);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+    }
+
+    #overlay button:hover {
+      background: linear-gradient(135deg, #50ee50, #1a8a1a);
+    }
+  </style>
+  <script type="module" crossorigin src="./assets/index-CPVeeDTC.js"></script>
+</head>
+<body>
+
+  <h1>🃏 FreeCell</h1>
+
+  <div id="toolbar">
+    <button id="btn-new">🔀 Nouvelle partie</button>
+    <button id="btn-undo" disabled>↩ Annuler</button>
+    <button id="btn-hint">💡 Indice</button>
+  </div>
+
+  <div id="stats">Coups : <span id="moves">0</span></div>
+
+  <div id="canvas-wrap">
+    <canvas id="board"></canvas>
+    <div id="overlay">
+      <p>🎉 Bravo, vous avez gagné !</p>
+      <button id="overlay-btn">Nouvelle partie</button>
+    </div>
+  </div>
+
+</body>
+</html>
